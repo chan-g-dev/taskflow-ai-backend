@@ -1,6 +1,10 @@
 from fastapi import FastAPI
+from uuid import uuid4, UUID
+
 app = FastAPI()
-from app.models.task import Task
+from app.models.task import TaskCreate, Task
+
+tasks = []
 
 @app.get("/")
 def root():
@@ -9,7 +13,7 @@ def root():
     }
 
 @app.get("/tasks/{task_id}")
-def get_task(task_id:int):
+def get_task(task_id:UUID):
     return {
         "task_id":task_id,
         "message":f"Fetching task {task_id}"
@@ -23,8 +27,21 @@ def search_tasks(priority: str, completed : bool):
     }
 
 @app.post("/tasks")
-def create_task(task: Task):
+def create_task(task: TaskCreate):
+    new_task = Task(
+        id=uuid4(),
+        title=task.title,
+        priority=task.priority,
+        completed=task.completed
+    )
+    tasks.append(new_task)
     return {
         "message": "Task created successfully",
-        "task": task
+        "task": new_task
+    }
+
+@app.get("/tasks")
+def get_tasks():
+    return {
+        "tasks" : tasks
     }

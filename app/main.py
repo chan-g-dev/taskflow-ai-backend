@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from uuid import uuid4, UUID
-
+from fastapi import HTTPException
+    
 app = FastAPI()
-from app.models.task import TaskCreate, Task
+from app.models.task import TaskCreate, Task, TaskUpdate
 
 tasks = []
 
@@ -14,10 +15,10 @@ def root():
 
 @app.get("/tasks/{task_id}")
 def get_task(task_id:UUID):
-    return {
-        "task_id":task_id,
-        "message":f"Fetching task {task_id}"
-    }
+    for task in tasks:
+        if task.id == task_id:
+            return task
+    raise HTTPException(status_code=404, detail="Task not found")
 
 @app.get("/search")
 def search_tasks(priority: str, completed : bool):
@@ -45,3 +46,26 @@ def get_tasks():
     return {
         "tasks" : tasks
     }
+
+@app.put("/tasks/{task_id}")
+def update_task(task_id: UUID, task_update: TaskUpdate):
+    for task in tasks:
+        if task.id == task_id:
+            task.title = task_update.title
+            task.priority = task_update.priority
+            task.completed = task_update.completed
+            return {
+                "message": "Task updated successfully",
+                "task": task
+            }
+    raise HTTPException(status_code=404, detail="Task not found")
+
+@app.delete("/tasks/{task_id}")
+def delete_task(task_id: UUID):
+    for task in tasks:
+        if task.id == task_id:
+            tasks.remove(task)
+            return {
+                "message": "Task deleted successfully"
+            }
+    raise HTTPException(status_code=404, detail="Task not found")

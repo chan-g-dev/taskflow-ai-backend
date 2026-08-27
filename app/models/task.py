@@ -11,3 +11,8 @@ class TaskCreate(BaseModel):
     title: str
     priority : str
     completed: bool
+
+class TaskUpdate(BaseModel):
+    title: str
+    priority : str
+    completed: bool
